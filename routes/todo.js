@@ -1,11 +1,33 @@
 const express = require("express");
-
+const TodoCtrl = require("../controllers/todo");
 const router = express.Router();
 
-const TodoCtrl = require("../controllers/todo");
+router.put("/update", async (req, res) => {
+  const { _id, category, text, priority } = req.body;
+
+  const data = await TodoCtrl.update(_id, category, text, priority);
+
+  res.status(data.statusCode || 200).json(data);
+});
+
+router.post("/create", async (req, res) => {
+  const { category, text, priority } = req.body;
+
+  const data = await TodoCtrl.create(category, text, priority);
+
+  res.status(data.statusCode || 200).json(data);
+});
 
 router.get("/list", async (req, res) => {
   const data = await TodoCtrl.list();
+
+  res.status(data.statusCode || 200).json(data);
+});
+
+router.delete("/:_id", async (req, res) => {
+  const { _id } = req.params;
+
+  const data = await TodoCtrl.destroy(_id);
 
   res.status(data.statusCode || 200).json(data);
 });
