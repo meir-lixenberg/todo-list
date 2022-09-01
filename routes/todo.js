@@ -12,7 +12,6 @@ router.put("/update", async (req, res) => {
 
 router.post("/create", async (req, res) => {
   const { category, text, priority } = req.body;
-  console.log(req.body);
   const data = await TodoCtrl.create(category, text, priority);
 
   res.status(data.statusCode || 200).json(data);

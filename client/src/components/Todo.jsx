@@ -16,75 +16,53 @@ import delete_black from "../delete_black_24dp.svg";
 export default function Todo() {
   const queryClient = useQueryClient();
 
-  let { isLoading, error, data } = useQuery(["todos"], () =>
+  let { isLoading, error, data } = useQuery("todos", () =>
     fetch(process.env.REACT_APP_SERVER_URL + "/todo/list").then((res) =>
-      res.json().then((r) => {
-        return r.data;
-      })
+      res.json().then((r) => r.data)
     )
   );
 
-  const deleteTodo = useMutation(
-    (_id) => {
-      fetch(process.env.REACT_APP_SERVER_URL + "/todo/" + _id, {
-        method: "DELETE",
-      }).then((res) => res.json());
-    },
-    {
-      onSuccess: () => {
-        // Invalidate and refetch
-        queryClient.invalidateQueries(["todos"]);
+  const deleteTodo = async (_id) => {
+    await fetch(process.env.REACT_APP_SERVER_URL + "/todo/" + _id, {
+      method: "DELETE",
+    });
+    queryClient.invalidateQueries("todos");
+  };
+
+  const updateTodo = async (_id) => {
+    const category = window.prompt("category? (optional).");
+    const text = window.prompt("text? (optional).");
+    const priority = window.prompt("priority? (optional).");
+
+    const data = { _id, category, text, priority };
+
+    await fetch(process.env.REACT_APP_SERVER_URL + "/todo/update", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
       },
-    }
-  );
+      body: JSON.stringify(data),
+    });
 
-  const updateTodo = useMutation(
-    (_id) => {
-      const category = window.prompt("category? (optional).");
-      const text = window.prompt("text? (optional).");
-      const priority = window.prompt("priority? (optional).");
+    queryClient.invalidateQueries("todos");
+  };
 
-      const data = { _id, category, text, priority };
+  const addTodo = async () => {
+    const category = window.prompt("category?");
+    const text = window.prompt("text?");
+    const priority = window.prompt("priority?");
 
-      fetch(process.env.REACT_APP_SERVER_URL + "/todo/update", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }).then((res) => res.json());
-    },
-    {
-      onSuccess: () => {
-        // Invalidate and refetch
-        queryClient.invalidateQueries(["todos"]);
+    const data = { category, text, priority };
+
+    await fetch(process.env.REACT_APP_SERVER_URL + "/todo/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-    }
-  );
-
-  const addTodo = useMutation(
-    () => {
-      const category = window.prompt("category?");
-      const text = window.prompt("text?");
-      const priority = window.prompt("priority?");
-
-      const data = { category, text, priority };
-
-      fetch(process.env.REACT_APP_SERVER_URL + "/todo/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      }).then((res) => res.json());
-    },
-    {
-      onSuccess: () => {
-        // Invalidate and refetch
-        queryClient.invalidateQueries(["todos"]);
-      },
-    }
-  );
+      body: JSON.stringify(data),
+    });
+    queryClient.invalidateQueries("todos");
+  };
 
   const sortTodos = (e) => {
     const selected = e.target.value;
@@ -115,7 +93,7 @@ export default function Todo() {
       <div className="buttons">
         <Button
           onClick={() => {
-            addTodo.mutate();
+            addTodo();
           }}
           variant="contained"
           disableElevation
@@ -145,14 +123,14 @@ export default function Todo() {
                   <div className="edit-wrapper">
                     <img
                       onClick={() => {
-                        updateTodo.mutate(e._id);
+                        updateTodo(e._id);
                       }}
                       src={edit_note}
                       alt="edit"
                     />
                     <img
                       onClick={() => {
-                        deleteTodo.mutate(e._id);
+                        deleteTodo(e._id);
                       }}
                       src={delete_black}
                       alt="delete"
